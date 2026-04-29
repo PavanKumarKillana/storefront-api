@@ -66,3 +66,29 @@ When you show this to a professor or an interviewer, point out these specific ar
 - **The Admin Customizations:** Emphasize the Autocomplete Fields on the Order page which optimizes memory usage.
 - **Dynamic Serializer Algorithms:** Point them to `CartSerializer.get_total_price` in `serializers.py` to explain how you dynamically compute the sum of heavily nested datasets on the fly using List Comprehension.
 - **UUID Security Navigation:** Mention how you mitigated integer-enumeration attacks by upgrading Carts to use UUIDs!
+
+---
+
+## 6. Phase 3: Media Management & Frontend Integration
+
+### Problem D: Handling User Uploads
+**The Issue:** A database is built to store text and numbers, not gigabytes of image files.
+**The Solution:** We integrated **Pillow** to process images and configured `MEDIA_ROOT` and `MEDIA_URL` in `settings.py`. We built a `ProductImage` model connected via a Foreign Key to `Product`, allowing multiple images per product. We then exposed these images via a nested `ProductImageViewSet`.
+
+### Problem E: Connecting the Frontend
+**The Issue:** Modern web architecture separates the Backend (Django) from the Frontend (React/Vanilla JS). By default, browsers block the Frontend from reading the Backend due to security rules.
+**The Solution:** We installed `django-cors-headers` and configured `CORS_ALLOW_ALL_ORIGINS = True`. We then wrote a Vanilla Javascript `fetch()` script in `frontend/app.js` to dynamically pull the API JSON data and render HTML `<img>` tags on the fly.
+
+---
+
+## 7. Phase 4: Enterprise Performance (Redis & Celery)
+
+To make this project worthy of an AdTech backend role, we implemented distributed systems.
+
+### In-Memory Caching (Redis)
+**Why?** Querying a SQL database is slow. If 10,000 users load the products page, the hard drive maxes out and crashes.
+**What we did:** We integrated `django-redis`. We used the `@method_decorator(cache_page(60 * 5))` on our ViewSets. Now, Django hits the SQL database once, stores the JSON response in the Redis RAM engine, and serves the next 9,999 users in milliseconds without ever touching the SQL hard drive.
+
+### Asynchronous Background Workers (Celery)
+**Why?** If a user uploads a 10MB image, or the system needs to send 5,000 promotional emails, the Django server will freeze until the job is done, causing the user's browser to spin endlessly.
+**What we did:** We implemented **Celery** as a background worker queue, using Redis as the message broker (`CELERY_BROKER_URL`). Now, Django can instantly offload heavy processing tasks to the Celery worker and immediately return a success response to the user.

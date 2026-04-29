@@ -63,8 +63,17 @@ async function loadProducts() {
         products.forEach(product => {
             const card = document.createElement('div');
             card.className = 'card';
+            
+            // Check if product has an image, otherwise leave blank or add placeholder
+            let imageHtml = '';
+            if (product.images && product.images.length > 0) {
+                // DRF provides the absolute URL (e.g. http://127.0.0.1:8000/media/store/images/...)
+                imageHtml = `<img src="${product.images[0].image}" class="product-image" alt="${product.title}">`;
+            }
+
             card.innerHTML = `
-                <div>
+                ${imageHtml}
+                <div style="padding: 15px;">
                     <div class="card-title">${product.title}</div>
                     <div class="card-price">$${product.unit_price}</div>
                 </div>

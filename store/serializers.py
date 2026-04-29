@@ -1,5 +1,5 @@
 from decimal import Decimal
-from store.models import Product, Collection, Cart, CartItem
+from store.models import Product, Collection, Cart, CartItem, ProductImage
 from rest_framework import serializers
 
 
@@ -15,15 +15,27 @@ class CollectionSerializer(serializers.ModelSerializer):
     products_count = serializers.IntegerField(read_only=True)
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        product_id = self.context['product_id']
+        return ProductImage.objects.create(product_id=product_id, **validated_data)
+
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image']
+
+
 class ProductSerializer(serializers.ModelSerializer):
     """
     Serializes Product Model to JSON.
     Demonstrating ModelSerializer which automatically wires up basic fields.
     """
+    images = ProductImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = Product
         # We explicitly list the fields we want to expose to the public API
-        fields = ['id', 'title', 'description', 'slug', 'inventory', 'unit_price', 'price_with_tax', 'collection']
+        fields = ['id', 'title', 'description', 'slug', 'inventory', 'unit_price', 'price_with_tax', 'collection', 'images']
 
     # We can create custom fields that look like properties on the JSON
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')

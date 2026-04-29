@@ -43,6 +43,15 @@ class CollectionAdmin(admin.ModelAdmin):
         )
 
 
+class ProductImageInline(admin.TabularInline):
+    model = models.ProductImage
+    readonly_fields = ['thumbnail']
+
+    def thumbnail(self, instance):
+        if instance.image.name != '':
+            return format_html('<img src="{}" class="thumbnail" />', instance.image.url)
+        return ''
+
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
     """
@@ -70,6 +79,8 @@ class ProductAdmin(admin.ModelAdmin):
 
     # Here we define a custom Bulk Action
     actions = ['clear_inventory']
+    
+    inlines = [ProductImageInline]
 
     def collection_title(self, product):
         return product.collection.title
@@ -81,7 +92,7 @@ class ProductAdmin(admin.ModelAdmin):
         """
         if product.inventory < 10:
             return format_html('<span style="color: red; font-weight: bold;">Low ({} left)</span>', product.inventory)
-        return format_html('<span style="color: green;">OK</span>')
+        return format_html('<span style="color: green;">{}</span>', 'OK')
 
     @admin.action(description='Clear inventory')
     def clear_inventory(self, request, queryset):

@@ -11,5 +11,9 @@ router.register('carts', views.CartViewSet, basename='carts')
 carts_router = routers.NestedDefaultRouter(router, 'carts', lookup='cart')
 carts_router.register('items', views.CartItemViewSet, basename='cart-items')
 
+# Nested Router specifically builds the /products/{id}/images/ hierarchy
+products_router = routers.NestedDefaultRouter(router, 'products', lookup='product')
+products_router.register('images', views.ProductImageViewSet, basename='product-images')
+
 # Expose the generated paths dynamically
-urlpatterns = router.urls + carts_router.urls
+urlpatterns = router.urls + carts_router.urls + products_router.urls
